@@ -70,26 +70,46 @@ const AdminDashboard = () => {
     const handleAddMaterial = async (e) => {
         e.preventDefault();
         try {
+            console.log('Starting material upload...');
+            console.log('Material data:', newMaterial);
+
             const formData = new FormData();
             formData.append('title', newMaterial.title);
             formData.append('subjectId', newMaterial.subjectId);
             if (newMaterial.file) {
                 formData.append('file', newMaterial.file);
+                console.log('File being uploaded:', newMaterial.file);
             }
             if (newMaterial.link) {
                 formData.append('link', newMaterial.link);
             }
 
-            await axios.post("http://localhost:3678/api/materials/create", formData, {
-                headers: { 
-                    Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-                    'Content-Type': 'multipart/form-data'
+            // Log FormData contents
+            for (let pair of formData.entries()) {
+                console.log('FormData entry:', pair[0], pair[1]);
+            }
+
+            const response = await axios.post(
+                "http://localhost:3678/api/materials",
+                formData,
+                {
+                    headers: { 
+                        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
                 }
-            });
+            );
+
+            console.log('Upload response:', response.data);
             setNewMaterial({ title: "", subjectId: "", file: null, link: "" });
             fetchSubjectsWithMaterials();
         } catch (error) {
-            console.error("Failed to add material", error);
+            console.error('Material upload error:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status
+            });
+            alert(`Failed to add material: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -125,25 +145,15 @@ const AdminDashboard = () => {
 
     const handleDownload = async (material) => {
         try {
-            const response = await axios.get(
-                `http://localhost:3678/api/admin/materials/download/${material._id}`,
-                {
-                    headers: { 
-                        Authorization: `Bearer ${localStorage.getItem("adminToken")}` 
-                    },
-                    responseType: 'blob'
-                }
-            );
-
-            const blob = new Blob([response.data]);
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = material.fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            if (material.fileUrl) {
+                // For Cloudinary files, directly open in a new tab
+                window.open(material.fileUrl, '_blank');
+            } else if (material.link) {
+                // For external links
+                window.open(material.link, '_blank');
+            } else {
+                console.error("No file URL or link available");
+            }
         } catch (error) {
             console.error("Failed to download material:", error);
         }
@@ -239,7 +249,7 @@ const AdminDashboard = () => {
                                 <div key={material._id} className="material-item">
                                     <div className="material-content">
                                         <h5>{material.title}</h5>
-                                        {material.fileName && (
+                                        {material.fileUrl && (
                                             <div className="material-file">
                                                 <p>File: {material.fileName}</p>
                                                 <button 

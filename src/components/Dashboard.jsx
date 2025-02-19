@@ -6,6 +6,7 @@ const Dashboard = () => {
     const [subjects, setSubjects] = useState([]);
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [materials, setMaterials] = useState([]);
+    const [isDownloading, setIsDownloading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -53,26 +54,28 @@ const Dashboard = () => {
 
     const handleDownload = async (material) => {
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.get(
-                `http://localhost:3678/api/materials/download/${material._id}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                    responseType: 'blob'
-                }
-            );
+            setIsDownloading(true);
+            
+            if (material.cloudinaryId) {
+                // Get a fresh signed URL
+                const response = await axios.get(`http://localhost:3678/api/materials/url/${material._id}`);
+                const { url } = response.data;
+                
+                console.log('Download URL:', url); // Debug log
 
-            const blob = new Blob([response.data], { type: response.headers['content-type'] });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = material.fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+                // Use window.location for direct download
+                window.location.href = url;
+            } else if (material.link) {
+                window.open(material.link, '_blank');
+            } else {
+                console.error("No file URL or link available");
+                alert("No file URL or link available");
+            }
         } catch (error) {
-            console.error("Failed to download material", error);
+            console.error("Failed to download material:", error);
+            alert("Failed to download material. Please try again.");
+        } finally {
+            setIsDownloading(false);
         }
     };
 
@@ -91,14 +94,15 @@ const Dashboard = () => {
                                 <div key={material._id} className="material-card">
                                     <h4>{material.title}</h4>
                                     <div className="material-content">
-                                        {material.fileName && (
+                                        {material.fileUrl && (
                                             <div className="material-file">
                                                 <p>File: {material.fileName}</p>
                                                 <button 
                                                     onClick={() => handleDownload(material)}
                                                     className="download-btn"
+                                                    disabled={isDownloading}
                                                 >
-                                                    Download Material
+                                                    {isDownloading ? 'Loading...' : 'Download Material'}
                                                 </button>
                                             </div>
                                         )}
