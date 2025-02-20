@@ -24,10 +24,10 @@ const AdminDashboard = () => {
 
     const fetchSubjectsWithMaterials = async () => {
         try {
-            const res = await axios.get("http://localhost:3678/api/admin/subjects", {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/subjects`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` }
             });
-            console.log('Fetched subjects with materials:', res.data); // Debug log
+            console.log('Fetched subjects with materials:', res.data);
             setSubjects(res.data);
         } catch (error) {
             console.error("Failed to fetch subjects", error);
@@ -37,7 +37,7 @@ const AdminDashboard = () => {
     const handleAddSubject = async (e) => {
         e.preventDefault();
         try {
-            await axios.post("http://localhost:3678/api/admin/subjects", newSubject, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/subjects`, newSubject, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` }
             });
             setNewSubject({ name: "", description: "" });
@@ -49,19 +49,19 @@ const AdminDashboard = () => {
 
     const handleDeleteSubject = async (subjectId) => {
         try {
-            console.log('Deleting subject:', subjectId); // Debug log
+            console.log('Deleting subject:', subjectId);
             
             if (!subjectId) {
                 console.error('Missing subjectId');
                 return;
             }
 
-            await axios.delete(`http://localhost:3678/api/admin/subjects/${subjectId}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/subjects/${subjectId}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` }
             });
             
             console.log('Subject deleted successfully');
-            fetchSubjectsWithMaterials(); // Refresh the subjects list
+            fetchSubjectsWithMaterials();
         } catch (error) {
             console.error("Failed to delete subject:", error.response?.data || error.message);
         }
@@ -84,13 +84,8 @@ const AdminDashboard = () => {
                 formData.append('link', newMaterial.link);
             }
 
-            // Log FormData contents
-            for (let pair of formData.entries()) {
-                console.log('FormData entry:', pair[0], pair[1]);
-            }
-
             const response = await axios.post(
-                "http://localhost:3678/api/materials",
+                `${import.meta.env.VITE_API_URL}/api/materials`,
                 formData,
                 {
                     headers: { 
@@ -115,14 +110,14 @@ const AdminDashboard = () => {
 
     const handleDeleteMaterial = async (materialId, subjectId) => {
         try {
-            console.log('Attempting to delete material:', { materialId, subjectId }); // Debug log
+            console.log('Attempting to delete material:', { materialId, subjectId });
             
             if (!materialId || !subjectId) {
                 console.error('Missing materialId or subjectId');
                 return;
             }
 
-            const response = await axios.delete(`http://localhost:3678/api/admin/materials/${materialId}`, {
+            const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/materials/${materialId}`, {
                 headers: { 
                     Authorization: `Bearer ${localStorage.getItem("adminToken")}`
                 },
@@ -130,7 +125,7 @@ const AdminDashboard = () => {
             });
             
             console.log('Material deletion response:', response.data);
-            fetchSubjectsWithMaterials(); // Refresh the subjects list
+            fetchSubjectsWithMaterials();
         } catch (error) {
             console.error("Failed to delete material:", error.response?.data || error.message);
         }

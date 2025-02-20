@@ -18,7 +18,7 @@ const Dashboard = () => {
 
         const fetchSubjects = async () => {
             try {
-                const res = await axios.get("http://localhost:3678/api/subjects", {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/subjects`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setSubjects(res.data);
@@ -37,7 +37,7 @@ const Dashboard = () => {
     const handleSubjectClick = async (subjectId) => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`http://localhost:3678/api/materials/${subjectId}`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/materials/${subjectId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMaterials(res.data);
@@ -58,7 +58,7 @@ const Dashboard = () => {
             
             if (material.cloudinaryId) {
                 // Get a fresh signed URL
-                const response = await axios.get(`http://localhost:3678/api/materials/url/${material._id}`);
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/materials/url/${material._id}`);
                 const { url } = response.data;
                 
                 console.log('Download URL:', url); // Debug log

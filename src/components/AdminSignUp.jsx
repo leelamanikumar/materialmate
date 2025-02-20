@@ -8,7 +8,7 @@ const AdminSignUp = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post("http://localhost:3678/api/auth/admin/signup", { email, password });
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/admin/signup`, { email, password });
             navigate("/admin/signin");
         } catch (error) {
             console.error("Signup failed", error);

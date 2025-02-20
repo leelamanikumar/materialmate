@@ -10,7 +10,7 @@ const AdminSignIn = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:3678/api/auth/admin/signin", { email, password });
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/admin/signin`, { email, password });
             localStorage.setItem("adminToken", res.data.token);
             navigate("/admin/dashboard");
         } catch (error) {

@@ -10,7 +10,7 @@ const SignIn = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:3678/api/auth/signin", { email, password });
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/signin`, { email, password });
             localStorage.setItem("token", res.data.token);
             navigate("/dashboard");
         } catch (error) {
